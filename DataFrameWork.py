@@ -6,6 +6,7 @@ def read(file_path):
         content = file.read()
     return content
 
+
 # 假设df是包含股票K线数据的DataFrame，包含'high', 'low', 'open', 'close'列
 def find_top_bottom(df):
     tops = []
