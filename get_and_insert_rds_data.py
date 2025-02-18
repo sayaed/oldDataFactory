@@ -83,6 +83,29 @@ def select_all_stock_code_from_aliyun_rds():
     print(len(result))
     return result
 
+def insert_data_to_aliyun_rds():
+    try:
+        # 添加 client_flag 参数（可选）
+        conn = pymysql.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        # SQL 插入
+        sql = "INSERT INTO `stock_db`.`stock_daily_data` (`stock_code`, `from_date`, `close_price`) VALUES (%s, %s, %s)"
+        # 批量插入
+        values = [
+            ('000001', '2021-01-01', 10.0),
+            ('000002', '2021-01-01', 20.0),
+            ('000003', '2021-01-01', 30.0),
+            ('000004', '2021-01-01', 40.0),
+            ('000005', '2021-01-01', 50.0),
+        ]
+        cursor.executemany(sql, values)
+        conn.commit()
+    except pymysql.Error as e:
+        print(f"阿里云数据库错误: {e.args[0]} - {e.args[1]}")
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == '__main__':
     # app.run(debug=True)
     select_all_stock_code_from_aliyun_rds()

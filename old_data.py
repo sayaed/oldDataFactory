@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 import time
-from get_rds_data import select_all_stock_code_from_aliyun_rds
+from get_and_insert_rds_data import select_all_stock_code_from_aliyun_rds
 
 
 
