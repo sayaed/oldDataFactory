@@ -1,5 +1,8 @@
+import pandas as pd
 from flask import Flask, jsonify
 import pymysql
+from sqlalchemy import create_engine
+
 
 app = Flask(__name__)
 
@@ -89,7 +92,7 @@ def insert_data_to_aliyun_rds():
         conn = pymysql.connect(**DB_CONFIG)
         cursor = conn.cursor()
         # SQL 插入
-        sql = "INSERT INTO `stock_db`.`stock_daily_data` (`stock_code`, `from_date`, `close_price`) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO `stock_db`.`stock_daily_data` (`from_date`, `close_price`) VALUES (%s, %s, %s)"
         # 批量插入
         values = [
             ('000001', '2021-01-01', 10.0),
@@ -102,6 +105,31 @@ def insert_data_to_aliyun_rds():
         conn.commit()
     except pymysql.Error as e:
         print(f"阿里云数据库错误: {e.args[0]} - {e.args[1]}")
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def insert_sina_data(df):
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        print("连接数据库成功！")
+        # day,open,high,low,close,volume,code,status
+        merge_sql = """
+        INSERT INTO test_stock_daily_data (from_date, opening_price_today, highest_price_today, lowest_price_today, close_price_yesterday, volume_today, stock_code)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        data_tuples = [tuple(x) for x in df.values]
+        cursor.executemany(merge_sql, data_tuples)
+        conn.commit()
+        print("数据插入成功！")
+    except pymysql.Error as e:
+        print(f"阿里云数据库错误: {e.args[0]} - {e.args[1]}")
+    except pd.errors.EmptyDataError:
+        print("CSV文件为空。")
+    except Exception as e:
+        print(f"发生错误: {str(e)}")
     finally:
         cursor.close()
         conn.close()

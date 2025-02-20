@@ -1,8 +1,7 @@
 import pandas as pd
 import requests
 import time
-from get_and_insert_rds_data import select_all_stock_code_from_aliyun_rds
-
+from get_and_insert_rds_data import select_all_stock_code_from_aliyun_rds, insert_sina_data
 
 
 def get_sina_stock_data(symbol, start_date, end_date):
@@ -16,10 +15,9 @@ def get_sina_stock_data(symbol, start_date, end_date):
 
 def get_sina_all_stock_data(start_date, end_date):
     stock_codes = select_all_stock_code_from_aliyun_rds()
-
     data = []
     for i, code in enumerate(stock_codes):
-        if i < 3:
+        if i >= 4629:  # 限制爬取数量
             if code.startswith('6'):
                 stock_symbol = 'sh' + code
             elif code.startswith('0') or code.startswith('3'):
@@ -33,12 +31,20 @@ def get_sina_all_stock_data(start_date, end_date):
             response = requests.get(url)
             data = response.json()
             df = pd.DataFrame(data)
-            df['day'] = pd.to_datetime(df['day'], format='%Y-%m-%d')
-            df = df[(df['day'] >= start_date) & (df['day'] <= end_date)]
-            df.to_csv(f'sina_stock_{stock_symbol}.csv', index=False)
+            if df.empty:
+                print(f"股票{code}没有数据")
+            else:
+                df['code'] = code
+            # 新增status字段
+            # df['status'] = df['close'].apply(lambda x: 'close' if x == '' else 'normal')
+            # df['day'] = pd.to_datetime(df['day'], format='%Y-%m-%d')
+            # df = df[(df['day'] >= start_date) & (df['day'] <= end_date)]
+                df.to_csv(f'sina_stock_{stock_symbol}.csv', index=False)
+                insert_sina_data(df)
+                print(f"已爬取{i+1}/{len(stock_codes)}只股票{stock_symbol}数据")
+                time.sleep(3)  # 防止请求过于频繁
         else:
-            break
-    # return df
+            continue
 
 
 def get_a_stock_codes():

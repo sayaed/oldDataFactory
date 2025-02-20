@@ -9,6 +9,7 @@ def read(file_path):
 
 # 假设df是包含股票K线数据的DataFrame，包含'high', 'low', 'open', 'close'列
 def find_top_bottom(df):
+
     tops = []
     bottoms = []
 
@@ -66,14 +67,21 @@ def count_dict_keys(content):
 # 主函数
 if __name__ == "__main__":
     # 文件路径
-    file_path = '/Users/wangyun/Documents/stock_info1.txt'  # 请确保文件路径正确
+    # file_path = '/Users/wangyun/Documents/stock_info1.txt'  # 请确保文件路径正确
+    #
+    # # 读取文件内容
+    # file_content = read_file(file_path)
+    #
+    # # 计算字典中的键数量
+    # keys_count = count_dict_keys(file_content)
+    #
+    # # 打印结果
+    # if keys_count is not None:
+    #     print(f"字典中的键数量为: {keys_count}")
 
-    # 读取文件内容
-    file_content = read_file(file_path)
-
-    # 计算字典中的键数量
-    keys_count = count_dict_keys(file_content)
-
-    # 打印结果
-    if keys_count is not None:
-        print(f"字典中的键数量为: {keys_count}")
+    # 示例使用
+    csv_file_path = f'sina_stock_sh603181.csv'
+    df = pd.read_csv(csv_file_path)  # 加载股票数据
+    tops, bottoms = find_top_bottom(df)
+    print("顶分型:", tops)
+    print("底分型:", bottoms)
