@@ -6,40 +6,6 @@ from sqlalchemy import create_engine
 
 app = Flask(__name__)
 
-# 数据库配置信息
-DB_HOST = 'your_db_host'
-DB_USER = 'your_username'
-DB_PASSWORD = 'your_password'
-DB_NAME = 'your_database'
-
-
-@app.route('/api/stock_code/<string:stock_id>', methods=['GET'])
-def get_stock_code(stock_id):
-    try:
-        # 连接到数据库
-        connection = pymysql.connect(host=DB_HOST,
-                                     user=DB_USER,
-                                     password=DB_PASSWORD,
-                                     database=DB_NAME)
-
-        with connection.cursor() as cursor:
-            # SQL 查询
-            sql = "SELECT stock_code FROM stocks WHERE stock_id = %s"
-            cursor.execute(sql, (stock_id,))
-            result = cursor.fetchone()
-
-        if result:
-            stock_code = result[0]
-            return jsonify({'stock_code': stock_code})
-        else:
-            return jsonify({'error': 'Stock ID not found'}), 404
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-    finally:
-        connection.close()
-
 # 配置参数
 DB_CONFIG = {
     "host": "rm-uf6q7zsz3z0jkw53zzo.mysql.rds.aliyuncs.com",  # 数据库外网地址
@@ -49,6 +15,7 @@ DB_CONFIG = {
     "database": "stock_db",
     # 'ssl': {'ca': '/Users/wangyun/Downloads/ApsaraDB-CA-Chain/ApsaraDB-CA-Chain.pem'}
 }
+
 
 def test_ssl_connection():
     conn = None
@@ -65,6 +32,31 @@ def test_ssl_connection():
     finally:
         if conn:
             conn.close()
+
+@app.route('/api/stock_code/<string:stock_id>', methods=['GET'])
+def get_stock_code(stock_id):
+    try:
+        # 连接到数据库
+        conn = pymysql.connect(**DB_CONFIG)
+
+        with conn.cursor() as cursor:
+            # SQL 查询
+            sql = "SELECT stock_code FROM stocks WHERE stock_id = %s"
+            cursor.execute(sql, (stock_id,))
+            result = cursor.fetchone()
+
+        if result:
+            stock_code = result[0]
+            return jsonify({'stock_code': stock_code})
+        else:
+            return jsonify({'error': 'Stock ID not found'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        conn.close()
+
 
 @app.route('/api/stock_code', methods=['GET'])
 def select_all_stock_code_from_aliyun_rds():
